@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Reviews (
 
 def create_tables():
     # Connect to the SQLite database or create it if it doesn't exist
-    conn = sqlite3.connect('restaurant_reviews.db')
+    conn = sqlite3.connect('db/restaurant_reviews.db')
     cursor = conn.cursor()
 
     # Execute table creation statements
