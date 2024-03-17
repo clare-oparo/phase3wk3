@@ -4,7 +4,7 @@ from models.review import Review
 
 def test_customer_methods():
     print("Testing Customer Methods:")
-    customer = Customer(1)  # Assuming a customer with ID 1 exists
+    customer = Customer(1)  
     print(f"Full Name: {customer.full_name()}")
     
     favorite = customer.favorite_restaurant()
@@ -13,11 +13,11 @@ def test_customer_methods():
     else:
         print("Favorite Restaurant: None")
     
-    # Add a review (ensure a Restaurant with ID exists)
+    # Add a review 
     customer.add_review(Restaurant(1), 5)
     print("Added a new review.")
     
-    # Delete reviews for a Restaurant (ensure the ID matches an existing Restaurant)
+    # Delete reviews for a Restaurant 
     customer.delete_reviews(Restaurant(1))
     print("Deleted reviews for Restaurant 1.\n")
 
@@ -28,7 +28,7 @@ def test_restaurant_methods():
     print(f"Fanciest Restaurant: {fanciest_restaurant.name}")
     
     # Testing all_reviews method for a specific restaurant
-    restaurant = Restaurant(1)  # Assuming a restaurant with ID 1 exists
+    restaurant = Restaurant(1)  
     reviews = restaurant.all_reviews()
     print(f"All Reviews for {restaurant.name}:")
     for review in reviews:
