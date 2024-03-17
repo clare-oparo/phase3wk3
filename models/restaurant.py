@@ -1,5 +1,5 @@
 import sqlite3
-from models.review import Review  # Ensure this import works based on your project structure
+from models.review import Review
 
 class Restaurant:
     def __init__(self, id):
