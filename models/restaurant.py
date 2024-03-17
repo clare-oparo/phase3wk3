@@ -1,31 +1,47 @@
 import sqlite3
+from models.review import Review  # Ensure this import works based on your project structure
 
 class Restaurant:
     def __init__(self, id):
         self.id = id
         self.conn = sqlite3.connect('db/restaurant_reviews.db')
-    
-    def reviews(self):
-        query = """
-        SELECT * FROM Reviews
-        WHERE restaurant_id = ?
-        """
-        cursor = self.conn.cursor()
-        cursor.execute(query, (self.id,))
-        reviews = cursor.fetchall()
-        cursor.close()
-        # Assuming review has columns: id, restaurant_id, customer_id, star_rating
-        return [{"id": review[0], "restaurant_id": review[1], "customer_id": review[2], "star_rating": review[3]} for review in reviews]
+        self.name = self._get_name()
 
-    def customers(self):
+    def _get_name(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT name FROM Restaurants WHERE id = ?", (self.id,))
+        name = cursor.fetchone()[0]
+        cursor.close()
+        return name
+
+    @classmethod
+    def fanciest(cls):
+        conn = sqlite3.connect('db/restaurant_reviews.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM Restaurants ORDER BY price DESC LIMIT 1")
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if result:
+            return cls(result[0])
+        return None
+
+    def all_reviews(self):
+        cursor = self.conn.cursor()
         query = """
-        SELECT DISTINCT Customers.* FROM Reviews
+        SELECT Customers.first_name, Customers.last_name, Reviews.star_rating
+        FROM Reviews
         JOIN Customers ON Reviews.customer_id = Customers.id
         WHERE Reviews.restaurant_id = ?
         """
-        cursor = self.conn.cursor()
         cursor.execute(query, (self.id,))
-        customers = cursor.fetchall()
+        results = cursor.fetchall()
         cursor.close()
-        # Assuming customer has columns: id, first_name, last_name
-        return [{"id": customer[0], "first_name": customer[1], "last_name": customer[2]} for customer in customers]
+        formatted_reviews = [
+            f"Review for {self.name} by {first_name} {last_name}: {star_rating} stars."
+            for first_name, last_name, star_rating in results
+        ]
+        return formatted_reviews
+
+    def __del__(self):
+        self.conn.close()

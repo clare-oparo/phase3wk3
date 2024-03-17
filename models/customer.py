@@ -1,31 +1,48 @@
 import sqlite3
+from models.restaurant import Restaurant  # Ensure this import works based on your project structure
 
 class Customer:
     def __init__(self, id):
         self.id = id
         self.conn = sqlite3.connect('db/restaurant_reviews.db')
-    
-    def reviews(self):
-        query = """
-        SELECT * FROM Reviews
-        WHERE customer_id = ?
-        """
-        cursor = self.conn.cursor()
-        cursor.execute(query, (self.id,))
-        reviews = cursor.fetchall()
-        cursor.close()
-        # Assuming review has columns: id, restaurant_id, customer_id, star_rating
-        return [{"id": review[0], "restaurant_id": review[1], "customer_id": review[2], "star_rating": review[3]} for review in reviews]
 
-    def restaurants(self):
+    def full_name(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT first_name, last_name FROM Customers WHERE id = ?", (self.id,))
+        first_name, last_name = cursor.fetchone()
+        cursor.close()
+        return f"{first_name} {last_name}"
+
+    def favorite_restaurant(self):
         query = """
-        SELECT DISTINCT Restaurants.* FROM Reviews
-        JOIN Restaurants ON Reviews.restaurant_id = Restaurants.id
-        WHERE Reviews.customer_id = ?
+        SELECT restaurant_id, AVG(star_rating) as avg_rating FROM Reviews
+        WHERE customer_id = ?
+        GROUP BY restaurant_id
+        ORDER BY avg_rating DESC
+        LIMIT 1
         """
         cursor = self.conn.cursor()
         cursor.execute(query, (self.id,))
-        restaurants = cursor.fetchall()
+        result = cursor.fetchone()
         cursor.close()
-        # Assuming restaurant has columns: id, name, price
-        return [{"id": restaurant[0], "name": restaurant[1], "price": restaurant[2]} for restaurant in restaurants]
+        if result:
+            restaurant_id = result[0]
+            return Restaurant(restaurant_id)
+        return None
+
+    def add_review(self, restaurant, rating):
+        query = "INSERT INTO Reviews (restaurant_id, customer_id, star_rating) VALUES (?, ?, ?)"
+        cursor = self.conn.cursor()
+        cursor.execute(query, (restaurant.id, self.id, rating))
+        self.conn.commit()
+        cursor.close()
+
+    def delete_reviews(self, restaurant):
+        query = "DELETE FROM Reviews WHERE customer_id = ? AND restaurant_id = ?"
+        cursor = self.conn.cursor()
+        cursor.execute(query, (self.id, restaurant.id))
+        self.conn.commit()
+        cursor.close()
+    
+    def __del__(self):
+        self.conn.close()

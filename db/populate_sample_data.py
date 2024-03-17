@@ -1,40 +1,48 @@
 import sqlite3
 
-def insert_sample_data():
-    conn = sqlite3.connect('db/restaurant_reviews.db')
+def insert_sample_data(db_path='db/restaurant_reviews.db'):
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Sample Restaurants
+    # Clear existing data
+    cursor.executescript("""
+    DELETE FROM Reviews;
+    DELETE FROM Customers;
+    DELETE FROM Restaurants;
+    """)
+
+    # Insert sample Restaurants
     restaurants = [
-        ('The Greenhouse', 'Medium'),
-        ('Cafe del Sol', 'Low'),
-        ('Spice of Life', 'High'),
+        ('The Greenhouse', 'High'),  # Price here is 'Low', 'Medium', 'High'
+        ('Cafe del Sol', 'Medium'),
+        ('Spice of Life', 'Low'),
     ]
     cursor.executemany('INSERT INTO Restaurants (name, price) VALUES (?, ?)', restaurants)
 
-    # Sample Customers
+    # Insert sample Customers
     customers = [
         ('John', 'Doe'),
-        ('Jane', 'Doe'),
+        ('Jane', 'Roe'),
         ('Alice', 'Johnson'),
     ]
     cursor.executemany('INSERT INTO Customers (first_name, last_name) VALUES (?, ?)', customers)
 
-    # Committing here to ensure we have IDs to use for reviews
+    # Commit to save IDs
     conn.commit()
 
-    # Sample Reviews
-    # Assuming the IDs of Restaurants and Customers start at 1 and auto-increment
+    # Insert sample Reviews
+    # Match the IDs correctly based on the insertion order above
     reviews = [
-        (1, 1, 5),  # Customer 1 reviews Restaurant 1 with 5 stars
-        (2, 2, 4),  # Customer 2 reviews Restaurant 2 with 4 stars
-        (3, 3, 3),  # Customer 3 reviews Restaurant 3 with 3 stars
+        (1, 1, 5),  # First restaurant reviewed by first customer
+        (1, 2, 4),  # First restaurant reviewed by second customer
+        (2, 3, 3),  # Second restaurant reviewed by third customer
     ]
     cursor.executemany('INSERT INTO Reviews (restaurant_id, customer_id, star_rating) VALUES (?, ?, ?)', reviews)
 
     conn.commit()
+    cursor.close()
     conn.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     insert_sample_data()
-    print("Sample data has been inserted into the database.")
+    print("Sample data has been successfully inserted.")
