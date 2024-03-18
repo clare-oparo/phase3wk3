@@ -1,5 +1,5 @@
 import sqlite3
-from models.restaurant import Restaurant  # Ensure this import works based on your project structure
+from models.restaurant import Restaurant  
 
 class Customer:
     def __init__(self, id):
